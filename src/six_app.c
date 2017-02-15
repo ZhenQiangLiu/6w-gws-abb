@@ -3,7 +3,7 @@
  *
  *  Created on: Jul 25, 2016
  *  Updated on: Aug 6, 2016
- *  Updated on: Jan 31, 2017 - Feb 8, 2017
+ *  Updated on: Jan 31, 2017 - Feb 15, 2017
  *      Author: Qige Zhao <qige@6harmonics.com>
  */
 
@@ -66,7 +66,8 @@ int main(int argc, char **argv)
 				{ 0, 			no_argument, 0, 0 }
 		};
 
-		c = getopt_long(argc, argv, "hvdDi:b:", long_options, &option_index);
+		c = getopt_long(argc, argv, "hvdDi:b:", \
+				long_options, &option_index);
 
 		// no more params
 		if (c == -1) break;
@@ -96,7 +97,8 @@ int main(int argc, char **argv)
 		case 'i':
 
 #if defined(_ABB_SRC_IWINFO)
- 			snprintf(env.conf.ifname, APP_LIMIT_IFNAME_LENGTH, "%s", optarg);
+ 			snprintf(env.conf.ifname, APP_LIMIT_IFNAME_LENGTH, \
+ 					"%s", optarg);
 #endif
 
  			break;
@@ -118,8 +120,8 @@ int main(int argc, char **argv)
 	DBG("read command line params (getopt())\n");
 
 	// verified by Qige @ 2017.02.15
-	int c = 0;
-	while((c = getopt(argc, argv, "vhdDi:b:")) != -1) {
+	int c = 0, bw = 0;
+	while( ( c = getopt(argc, argv, "vhdDi:b:") ) != -1 ) {
 		switch(c) {
 		case 'h':
 			env.flag.help = 1;
@@ -134,12 +136,16 @@ int main(int argc, char **argv)
 			env.flag.daemon = 1;
 			break;
 
-#if defined(_ABB_SRC_IWINFO)
+#if defined( _ABB_SRC_IWINFO )
 		case 'i':
-			snprintf(env.conf.ifname, APP_LIMIT_IFNAME_LENGTH, "%s", optarg);
+			snprintf(env.conf.ifname, APP_LIMIT_IFNAME_LENGTH, \
+					"%s", optarg);
 			break;
 		case 'b':
-			env.conf.bw = atoi(optarg);
+			bw = atoi(optarg);
+			if (bw < GWS_ABB_CHANBW_MIN) bw = GWS_ABB_CHANBW_MIN;
+			if (bw > GWS_ABB_CHANBW_MAX) bw = GWS_ABB_CHANBW_MAX;
+			env.conf.bw = bw;
 			break;
 #endif
 
@@ -151,24 +157,25 @@ int main(int argc, char **argv)
 
 
 	DBG("check flags\n");
-	if (env.flag.help) {
+	if ( env.flag.help ) {
 		//app_version();
 		app_help(app);
 		return 0;
 	}
 
-	if (env.flag.version) {
+	if ( env.flag.version ) {
 		app_version();
 		return 0;
 	}
 
-	if (env.flag.debug) {
+	if ( env.flag.debug ) {
 		app_version();
 	}
 
 	env.app.pid = getpid();
 	snprintf(env.app.name, APP_LIMIT_COMMON_LENGTH, "%s", app);
-	if (env.flag.daemon) {
+
+	if ( env.flag.daemon ) {
 		app_daemon();
 		env.app.pid = getpid();
 		LOG("running daemon (%s, pid=%d)\n", env.app.name, env.app.pid);

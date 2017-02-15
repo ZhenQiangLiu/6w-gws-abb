@@ -10,19 +10,30 @@
 
 
 // data types
-typedef unsigned int			uint;
-typedef unsigned char			uchar;
-typedef char					byte;
-typedef unsigned short 			ushort;
+typedef unsigned int		uint;
+typedef unsigned char		uchar;
+typedef char				byte;
+typedef unsigned short 		ushort;
+
+
+#define UNKNOWN 			-1
+#define FALSE				0
+#define TRUE				1
 
 
 // call syslog()
-#define LOG(fmt, ...) 	{ char _bf[1024] = {0}; snprintf(_bf, sizeof(_bf)-1, fmt, ##__VA_ARGS__); \
-fprintf(stderr, "> %s", _bf); syslog(LOG_INFO, "%s", _bf); }
+#define LOG(fmt, ...) 	{ \
+							char _bf[1024] = {0}; \
+							snprintf(_bf, sizeof(_bf)-1, fmt, ##__VA_ARGS__); \
+							fprintf(stderr, "> %s", _bf); \
+							syslog(LOG_INFO, "%s", _bf); \
+						}
 
 // -DDEBUG symbol to control debug msg
 #ifdef DEBUG
-#define DBG(fmt, ...)	{ fprintf(stderr, "dbg> "fmt, ##__VA_ARGS__); }
+#define DBG(fmt, ...)	{ \
+							fprintf(stderr, "dbg> "fmt, ##__VA_ARGS__); \
+						}
 #else
 #define DBG(fmt, ...)	{}
 #endif

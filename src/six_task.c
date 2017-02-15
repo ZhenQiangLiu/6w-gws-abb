@@ -4,7 +4,7 @@
  *  Created on: Jul 25, 2016
  *  Updated on: Aug 6, 2016
  *  Updated on: Nov 11, 2016
- *  Updated on: Jan 22, 2017 - Feb 1, 2017
+ *  Updated on: Jan 22, 2017 - Feb 15, 2017
  *      Author: Qige Zhao <qige@6harmonics.com>
  */
 #include <stdio.h>
@@ -51,7 +51,7 @@ int Task(const void *env)
 static void task_init(void)
 {
 	// hook function
-#if defined(_ABB_SRC_IWINFO)
+#if defined( _ABB_SRC_IWINFO )
 	task_run = &Abb_iwinfo_run;
 	task_signal = &Abb_iwinfo_signal;
 #endif
