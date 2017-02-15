@@ -37,7 +37,7 @@ void (*task_signal)(void);
 // if you want to fork a process, do it here;
 int Task(const void *env)
 {
-	int ret;
+	int ret = TASK_OK;
 
 	task_init();
 	ret = (*task_run)(env);

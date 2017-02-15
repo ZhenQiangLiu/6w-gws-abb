@@ -37,7 +37,7 @@ static void app_daemon(void);
  * call main task()
  *
  * version 1.1.310117
- * todo: getopt(), getopt_long()
+ * getopt(), getopt_long()
  */
 int main(int argc, char **argv)
 {
@@ -52,27 +52,21 @@ int main(int argc, char **argv)
 
 	DBG("read command line params (getopt_long())\n");
 
-	// todo: verify in gdbserver
+	// verified @ 2017.02.15
 	for(;;) {
-		int option_index = 0, c = 0;
+		int option_index = 0;
+		int c = 0;
 		static struct option long_options[] = {
-				{ "h", 			no_argument, 0, 0 },
 				{ "help", 		no_argument, 0, 0 },
-				{ "v", 			no_argument, 0, 0 },
 				{ "version", 	no_argument, 0, 0 },
-				{ "d", 			no_argument, 0, 0 },
 				{ "debug", 		no_argument, 0, 0 },
-				{ "D", 			no_argument, 0, 0 },
 				{ "daemon", 	no_argument, 0, 0 },
-				{ "i", 			required_argument, 0, 0 },
 				{ "ifname", 	required_argument, 0, 0 },
-				{ "b",			required_argument, 0, 0 },
 				{ "bw", 		required_argument, 0, 0 },
 				{ 0, 			no_argument, 0, 0 }
 		};
 
-		//c = getopt_long(argc, argv, "", long_options, &option_index);
-		c = getopt_long_only(argc, argv, "", long_options, &option_index);
+		c = getopt_long(argc, argv, "hvdDi:b:", long_options, &option_index);
 
 		// no more params
 		if (c == -1) break;
@@ -81,34 +75,38 @@ int main(int argc, char **argv)
 		if (c == '?') continue;
 
 		// handle param
-		switch(option_index) {
+		switch(c) {
 		case 0:
-		case 1:
+		case 'h':
 			env.flag.help = 1;
-			return 0;
+			break;
+		case 1:
+		case 'v':
+			env.flag.version = 1;
 			break;
 		case 2:
-		case 3:
-			env.flag.version = 1;
-			return 0;
-			break;
-		case 4:
-		case 5:
+		case 'd':
 			env.flag.debug = 1;
 			break;
-		case 6:
-		case 7:
+		case 3:
+		case 'D':
 			env.flag.daemon = 1;
 			break;
-		case 9:
-		case 10:
+		case 4:
+		case 'i':
+
 #if defined(_ABB_SRC_IWINFO)
  			snprintf(env.conf.ifname, APP_LIMIT_IFNAME_LENGTH, "%s", optarg);
 #endif
+
  			break;
-		case 11:
-		case 12:
+		case 5:
+		case 'b':
+
+#if defined(_ABB_SRC_IWINFO)
 			env.conf.bw = atoi(optarg);
+#endif
+
 			break;
 		default: // running with default values
 			break;
@@ -119,9 +117,9 @@ int main(int argc, char **argv)
 
 	DBG("read command line params (getopt())\n");
 
-	// verified by Qige @ 2017.01.31
+	// verified by Qige @ 2017.02.15
 	int c = 0;
-	while((c = getopt(argc, argv, "Dvhdi:b:k:")) != -1) {
+	while((c = getopt(argc, argv, "vhdDi:b:")) != -1) {
 		switch(c) {
 		case 'h':
 			env.flag.help = 1;
@@ -174,16 +172,17 @@ int main(int argc, char **argv)
 		app_daemon();
 		env.app.pid = getpid();
 		LOG("running daemon (%s, pid=%d)\n", env.app.name, env.app.pid);
+	} else {
+		DBG("started (%s, pid=%d)\n", env.app.name, env.app.pid);
 	}
 
-	LOG("started (%s, pid=%d)\n", env.app.name, env.app.pid);
+	// call Task, hook functions
 	ret = Task(&env);
 	return ret;
 }
 
-// todo: verify with gdbserver
-// detach terminal
-// run in backgrund
+// import from "mjpg-streamer"
+// detach terminal, run in backgrund
 static void app_daemon(void)
 {
 	int fr=0;
@@ -234,9 +233,10 @@ static void app_help(const char *app)
 {
 #ifdef USE_GETOPT_LONG
 	printf(" usage: %s [-D|--daemon] [-b|--bw chanbw] [-i|--ifname ifname]\n", app);
-	printf("        %s [-d|--debug] [-v|--version|--ver] [-h|--help]\n", app);
+	printf("        %s [-d|--debug] [-v|--version|--ver] [-h|--help]\n\n", app);
 #else
-	printf("  usage: %s [-D] [-b chanbw] [-i ifname]\n", app);
-	printf("         %s [-d] [-v] [-h]\n", app);
+	printf("  usage: %s [-D] [-b bandwidth] [-i ifname]\n", app);
+	printf("         %s [-d] [-v] [-h]\n\n", app);
 #endif
+	printf("     eg. %s -b8 -iwlan0 -D\n", app);
 }
